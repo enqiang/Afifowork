@@ -10,6 +10,7 @@
 
 int main(int argc,char *argv[]){
 	int fd ;
+	int rtn;   //子进程返回值
 	int n, i ;
 	char buf[BUFES];
 	time_t tp;
@@ -19,15 +20,24 @@ int main(int argc,char *argv[]){
 		exit(1);
 	}
 	
-	n=sprintf(buf," %d sends %s",getpid(),argv[1]);
-	printf("Send msg:%s\n",buf);
-	if((write(fd, buf, n+1))<0) { /*写入到FIFO中*/
-		perror("write");
-		close(fd); /* 关闭FIFO文件 */
-		exit(1);
-	}
+	if ( fork() == 0 ) {/* 子进程执行此命令 */
+        execlp( argv[1], NULL );   /* 如果exec函数返回，表明没有正常执行命令，打印错误信息*/
+        perror( argv[1] );
+        exit( errno );
+    }
+    else {/* 父进程， 等待子进程结束，并打印子进程的返回值 */
+        wait ( &rtn );
+        n=sprintf(buf," %d return value is %d\n",getpid(),rtn);
+		printf("Send msg:%s\n",buf);
+        if((write(fd, buf, n))<0) { 
+			perror("write");
+			close(fd); 
+			exit(1);
+		}
+        //printf( " child process return %s\n", rtn );
+    }
+
 	sleep(3); /*进程睡眠3秒*/
-	
 	close(fd); /* 关闭FIFO文件 */
 	exit(0);
 }

@@ -3,7 +3,7 @@
 int main(){
 	int i=0;
 	printf("start up\n");
-	while(i<50){
+	while(i<5){
 		sleep(3);
 		printf("waiting...\n");
 		i++;
